@@ -34,6 +34,21 @@
 -- |
 -- | If a field uses a custom data type, the table comment will have a 'data'
 -- | entry followed by a list of all custom datatypes used in the table.
+
+
+-- TODO:
+
+-- Add entities for logging message/comment data, so that we can have edit
+-- histories.
+
+-- Add logging entities for likes.
+
+-- Figure out if it's better for like entities to be separated to be specific
+-- to comments or posts, or to be consolidated into a single Like entity with
+-- NULLable fields referring either to a CommentId or PostId, as it is now.
+
+
+
 --------------------------------------------------------------------------------
 
 ------------------------------------USER INFO-----------------------------------
@@ -95,16 +110,21 @@ Friendship
 
 --------------------------------------------------------------------------------
 --#FriendshipLog ; documented in Models.md
+
 -- | The idea with this is to make sure that we have a full history of any
 -- Friendship-level actions.
 -- Logging will only occur when a field in Friendship is overwritten.
+
 FriendshipLog
     friendship FriendshipId
     user UserId -- who performed the action
 
     action FriendshipAction -- SendRequest, AcceptRequest, or Defriend.
+    timestamp UTCTime
 
-    createdAt UTCTime
+    createdAt UTCTime -- NOTE: When the log was recorded is distinct from when
+      -- the action was made (the 'timestamp'). These values should never be
+      -- identical, as logs are not made at the same time actions are taken.
 
 --------------------------------------------------------------------------------
 
@@ -112,6 +132,7 @@ FriendshipLog
 
 --------------------------------------------------------------------------------
 --#ConversationUser ; documented
+
 -- | Points a User to a Conversation. When created the isActive field will be
 -- true, indicating that they will receive updates to the conversation and it
 -- will remain visible to them.
@@ -135,13 +156,14 @@ ConversationUser
 
 --------------------------------------------------------------------------------
 --#ConversationMessage ; documented
+
 -- | A single conversation contains 1 or more messages. This table contains
 -- each message, along with the Conversation it points to.
 
 ConversationMessage
     conversation ConversationId
-    message Text
-    user UserId -- message was written by
+    content Text
+    author UserId
 
     createdAt UTCTime
     updatedAt UTCTime Maybe -- Allowed fields: message(?).
@@ -150,6 +172,7 @@ ConversationMessage
 
 --------------------------------------------------------------------------------
 --#Conversation ; documented
+
 -- | The entries for this table are sparse. That's because it will be used in
 -- SQL Joins to link between the ConversationUsers and ConversationMessages.
 -- See the documentation for more information.
@@ -169,9 +192,76 @@ Conversation
 --------------------------------NEWS FEED / WALLS-------------------------------
 
 --------------------------------------------------------------------------------
+--#Like
+
+Like
+    liker UserId
+
+    -- The following does not seem to be the most elegant solution to the
+    -- problem of connecting a Like to either a Post or a PostComment.
+
+    -- RULE: A Like can refer to EITHER a Post or a PostComment. Hence, one of
+    -- these fields must remain NULL.
+    post PostId Maybe
+    comment PostCommentId Maybe
+
+    createdAt UTCTime
+
+--------------------------------------------------------------------------------
 --#PostComment
+
+-- | I know this sounds like an action but it is not; it should be read as a
+-- noun, not a verb. This table references Post Comments to an actual Post
+-- (identified by the Post table). This is a many-to-one relationship.
+
+-- Currently lacks support for Media types.
 
 PostComment
     post PostId
-    comment Text
-    user UserId -- comment was written by
+    content Text
+    author UserId
+
+    likeCount Int
+
+    -- Unimplemented but we may want to allow for nested comments.
+    --nestedUnder PostCommentId Maybe -- Used only if this comment is nested
+      -- under another comment, rather than being a top-level comment to the
+      -- Post itself.
+
+    createdAt UTCTime
+    updatedAt UTCTime Maybe -- Allowed fields: content(?).
+
+--------------------------------------------------------------------------------
+--#Post
+
+-- Currently lacks support for Media types.
+
+Post
+    author UserId
+    content Text
+
+    commentCount Int
+    likeCount Int
+
+    createdAt UTCTime
+    updatedAt UTCTime Maybe -- Allowed fields: content(?).
+
+--------------------------------------------------------------------------------
+
+--------------------------------------MEDIA-------------------------------------
+
+--------------------------------------------------------------------------------
+--#Image
+
+Image
+    content ByteString
+    title Text Maybe -- "Untitled" if NULL
+    uploadedBy UserId
+
+--------------------------------------------------------------------------------
+--# Video
+
+Video
+    content ByteString
+    title Text Maybe -- "Untitled" if NULL
+    uploadedBy UserId

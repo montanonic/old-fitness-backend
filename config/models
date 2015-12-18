@@ -94,16 +94,15 @@ Friendship
       -- ever buggy in this table.
 
 --------------------------------------------------------------------------------
---#FriendshipLog
--- | This is an experimental table, following the questions raised in
--- UserInfo.md. The idea is to make sure that we have a full history of any
+--#FriendshipLog ; documented in Models.md
+-- | The idea with this is to make sure that we have a full history of any
 -- Friendship-level actions.
 -- Logging will only occur when a field in Friendship is overwritten.
 FriendshipLog
     friendship FriendshipId
     user UserId -- who performed the action
 
-    --action FriendshipAction -- SendRequest, AcceptRequest, or Defriend.
+    action FriendshipAction -- SendRequest, AcceptRequest, or Defriend.
 
     createdAt UTCTime
 
@@ -170,3 +169,9 @@ Conversation
 --------------------------------NEWS FEED / WALLS-------------------------------
 
 --------------------------------------------------------------------------------
+--#PostComment
+
+PostComment
+    post PostId
+    comment Text
+    user UserId -- comment was written by

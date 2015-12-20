@@ -259,7 +259,7 @@ Image
     uploadedBy UserId
 
 --------------------------------------------------------------------------------
---# Video
+--#Video
 
 Video
     content ByteString

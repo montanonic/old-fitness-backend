@@ -24,11 +24,11 @@ ip-from-header: "_env:IP_FROM_HEADER:false"
 # See https://github.com/yesodweb/yesod/wiki/Configuration#parsing-numeric-values-as-strings
 
 database:
-  user:     "_env:PGUSER:fitnessapp_LOWER"
+  user:     "_env:PGUSER:fitnessapp"
   password: "_env:PGPASS:fitnessapp"
   host:     "_env:PGHOST:localhost"
   port:     "_env:PGPORT:5432"
-  database: "_env:PGDATABASE:fitnessapp_LOWER"
+  database: "_env:PGDATABASE:fitnessapp"
   poolsize: "_env:PGPOOLSIZE:10"
 
 copyright: Insert copyright statement here

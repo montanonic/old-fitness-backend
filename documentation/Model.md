@@ -30,7 +30,20 @@ we join both tables to get a full history.
 
 ## Model/Data
 
-Haskell Sum Types to be used as Persistent Values are stored here.
+Haskell Sum Types to be used as Persistent Values are stored here. This helps to
+lay the foundation of our database, but the actual work is done in the CRUD
+folder.
 
 Be ***sure*** that all modules in this directory are made 'exposed-modules' in
 `fitness-app.cabal`.
+
+## Model/CRUD
+
+Database actions that CREATE records in entities, READ (query) data, UPDATE
+one, some, or all fields of a record, and occasionally DELETE records.
+
+These actions will be called within their respective Handlers, and will
+constitute the bulk of the work done by Yesod on this particular App.
+
+The standard output for these operations will be JSON Values (done by using the
+Aeson package and Yesod's integration with it).

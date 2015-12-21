@@ -54,24 +54,58 @@
 ------------------------------------USER INFO-----------------------------------
 
 --------------------------------------------------------------------------------
---#User ; data: Gender ; documented
+--#User ; documented
+
+-- | I've split the previous User model into User and Profile now to allow for
+-- easier integration with Yesod's authentication plugins. This is definitely
+-- a work in progress and can easily be reverted. However, it does seem to be
+-- an intelligent idea to have a table devoted solely to a user's identity.
+-- The information in Profile cannot be verified, aside from the email. We may
+-- consider moving the email and password fields into this
 
 User
     ident Text -- Authentication data. Under Persona this will be their email.
-      -- However, other Authentication services do not use an email for their
-      -- unique tokens. Hence, we must retain an `email` field.
+
+      -- Other Authentication services do not use an email for their unique
+      -- tokens. Hence, we should include an `email` field when adding other
+      -- authentication methods.
+
+    email Text Maybe SafeToRemove
+
+    createdAt UTCTime
+    updatedAt UTCTime Maybe -- Allowed fields: ident, email.
+
+    UniqueUser ident
+
+    deriving Typeable
+
+--------------------------------------------------------------------------------
+--#Profile ; data: Gender ; documented
+
+-- | This is what the old User entity used to be, but it now references the new
+-- User table, which stores the unique identifying information for that person.
+
+Profile
+    ident Text SafeToRemove -- delete this field after migration
+
+    user UserId
 
     firstName Text
     lastName Text
 
-    email Text Maybe-- The user uses this email to log in.
-    unverifiedEmail Text Maybe -- this field is used solely for accounts which
-      -- have not yet been authenticated. Upon authentication, this field is
-      -- converted to NULL (Nothing, in Haskell).
+    email Text Maybe SafeToRemove -- I'm moving this to the new User entity
+
+    unverifiedEmail Text Maybe SafeToRemove -- this field is used solely for
+      -- accounts which have not yet been authenticated. Upon authentication,
+      -- this field is converted to NULL (Nothing, in Haskell). The reason for
+      -- this field's existence, instead of a simple `isValidated` field, is
+      -- documented in `UserInfo.md`.
       --
-      -- The reason for this field's existence, instead of a simple
-      -- `isValidated` field, is documented in `UserInfo.md`.
-    password Text
+      -- I've decided to omit this field for now and worry about it when
+      -- we start integrating the iOS app into this backend.
+
+    password Text Maybe SafeToRemove -- This field is basically unnecessary
+      -- for the browser version of the app.
 
     dateOfBirth Day
     gender Gender -- See Model/Data/Gender
@@ -81,37 +115,28 @@ User
     createdAt UTCTime
     updatedAt UTCTime Maybe -- Allowed fields: ALL
 
-    UniqueUser ident
-    UniqueEmail email
-
-    deriving Typeable
+    UniqueProfile user -- This makes it easy to fetch all profile info with a
+      -- UserId. We can easily get that Id with maybeAuthId
 
 --------------------------------------------------------------------------------
---#UserLog ; data: UserUpdate
+--#ProfileLog ; data: UserUpdate
 
--- | Prevents data loss from meaningful changes to the User entity. Currently
+-- | Prevents data loss from meaningful changes to the Profile entity. Currently
 -- omits logging of LogIns and LogOuts, as that seems a bit overboard;
 -- however it may be worth discussing the potential value of such a feature.
 --
 -- Every log action here is an UPDATE.
 
-UserLog
+ProfileLog
     user UserId
 
-    action UserUpdate -- UpdateFirstName, UpdateLastName, UpdateEmail,
+    action ProfileUpdate -- UpdateFirstName, UpdateLastName, UpdateEmail,
       -- UpdateDateOfBirth, UpdateGender.
     previousValue Text -- all values are converted to text so that we don't
       -- have to use multiple fields to satisfy differing data types.
 
     createdAt UTCTime -- These logs are recorded at the same time a change
       -- is made. Hence, this is the timestamp of the change.
-
---------------------------------------------------------------------------------
---#Profile
-
--- | This table is yet to be implemented, but it will contain information users
--- want to share about themselves to others.
---Profile
 
 --------------------------------------------------------------------------------
 --#Friendship ; documented

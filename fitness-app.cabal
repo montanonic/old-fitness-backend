@@ -24,7 +24,7 @@ library
                      Handler.Home
                      Model.Data.Gender
                      Model.Data.FriendshipAction
-                     Model.Data.UserUpdate
+                     Model.Data.ProfileUpdate
 
     if flag(dev) || flag(library-only)
         cpp-options:   -DDEVELOPMENT

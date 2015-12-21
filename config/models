@@ -54,17 +54,23 @@
 ------------------------------------USER INFO-----------------------------------
 
 --------------------------------------------------------------------------------
---#User ; data: Gender
+--#User ; data: Gender ; documented
 
 User
-    ident Text -- Authentication data.
+    ident Text -- Authentication data. Under Persona this will be their email.
+      -- However, other Authentication services do not use an email for their
+      -- unique tokens. Hence, we must retain an `email` field.
 
     firstName Text
     lastName Text
 
-    email Text -- The user uses this email to log in.
-    emailVerified Bool -- User is not allowed to login until this field is true.
-      -- We will overwrite a User row if another person creates an account
+    email Maybe Text -- The user uses this email to log in.
+    unverifiedEmail Maybe Text -- this field is used solely for accounts which
+      -- have not yet been authenticated. Upon authentication, this field is
+      -- converted to NULL (Nothing, in Haskell).
+      --
+      -- The reason for this field's existence, instead of a simple
+      -- `isValidated` field, is documented in `UserInfo.md`.
     password Text
 
     dateOfBirth Day
@@ -77,7 +83,28 @@ User
 
     UniqueUser ident
     UniqueEmail email
+
     deriving Typeable
+
+--------------------------------------------------------------------------------
+--#UserLog ; data: UserUpdate
+
+-- | Prevents data loss from meaningful changes to the User entity. Currently
+-- omits logging of LogIns and LogOuts, as that seems a bit overboard;
+-- however it may be worth discussing the potential value of such a feature.
+--
+-- Every log action here is a change, except for EmailVerifiedAt
+
+UserLog
+    user UserId
+
+    action UserUpdate -- ChangeFirstName, ChangeLastName, ChangeEmail,
+      -- ChangeDateOfBirth, ChangeGender, EmailVerifiedAt.
+    previousValue Text -- all values are converted to text so that we don't
+      -- have to use multiple fields to satisfy differing data types.
+
+    createdAt UTCTime -- These logs are recorded at the same time a change
+      -- is made. Hence, this is the timestamp of the change.
 
 --------------------------------------------------------------------------------
 --#Profile
@@ -109,7 +136,7 @@ Friendship
       -- ever buggy in this table.
 
 --------------------------------------------------------------------------------
---#FriendshipLog ; documented in Models.md
+--#FriendshipLog ; data: FriendshipAction ; documented in Models.md
 
 -- | The idea with this is to make sure that we have a full history of any
 -- Friendship-level actions.
@@ -122,7 +149,7 @@ FriendshipLog
     action FriendshipAction -- SendRequest, AcceptRequest, or Defriend.
     timestamp UTCTime
 
-    createdAt UTCTime -- NOTE: When the log was recorded is distinct from when
+    createdAt UTCTime -- When the log was recorded is distinct from when
       -- the action was made (the 'timestamp'). These values should never be
       -- identical, as logs are not made at the same time actions are taken.
 

@@ -20,7 +20,37 @@ userbase and medical applications, it may actually be useful for companies like
 Kaiser to look at trends in Relationship defriending/refriending.
 
 We should definitely talk to Kim about the extent that we should be keeping
-track of data like the example above. 
+track of data like the example above.
+
+## User
+
+### unverifiedEmail
+
+This field exists in place of a Boolean isVerified field primarily because of
+enforcing Uniqueness constraints. In SQL, you can declare a field to be unique,
+which will mean that SQL will complain and refuse to insert any identical value
+into that column anywhere else in the table. This allows us to avoid having to
+check and see if an email already exists when registering a user, relegating
+that to the backend.
+
+Now, because of this, if we didn't have an unverifiedEmail field, and a user
+created an account but did not yet **verify** it, while another user created an
+account with the same email, likewise **not verifying it**, we'd either have to
+refuse to create the second user's account, or to delete the first. The
+important fact here is that ***no authentication has yet happened for either
+user***. Deleting a user account with an unverified email when someone else
+verifies that same email in another account totally makes sense. However, we
+should not be deleting any accounts on this basis until one user has ***verified
+that email***; until then, all accounts should be preserved.
+
+#### Why would this ever matter?
+
+Security-wise, this is not important at all. However, it could be a potential
+source of confusion/annoyance if people ever discovered this behavior, as they
+could continually prevent a friend from authenticating by registering with their
+email, no authentication required. Though this is not a very realistic scenario,
+the fact is, it could be done, and it is very trivial to prevent this from
+happening, so I will.
 
 ## Friendships
 

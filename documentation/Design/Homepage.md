@@ -17,5 +17,4 @@ this, we'll use an `$if`, `$then`, `$else` sequence in `homepage.hamlet`.
 
 Our login/sign-ups will initially be Authenticated with Firefox's *Persona*, AKA
 *BrowserId*. The mobile app will use a different means of authentication.
-Expanding  what services we offer for authentication is currently not a
-priority.
+Expanding what services we offer for authentication is currently not a priority.

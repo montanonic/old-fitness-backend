@@ -26,6 +26,9 @@ type Pronouns = String
 -- It will probably be best to have a list of common options availible. We
 -- wouldn't want users abusing this feature, so limiting choices and preventing
 -- customizations would safeguard us (and other users) from such abuses.
-data Gender = Male | Female | Specify String Pronouns
-  deriving (Show, Read, Eq)
+data Gender
+    = Male
+    | Female
+    | Specify String Pronouns
+    deriving (Show, Read, Eq)
 derivePersistField "Gender"

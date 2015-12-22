@@ -65,20 +65,16 @@
 
 User
     ident Text -- Authentication data. Under Persona this will be their email.
-
       -- Other Authentication services do not use an email for their unique
       -- tokens. Hence, we should include an `email` field when adding other
       -- authentication methods.
 
-    email Text Maybe SafeToRemove
-
     createdAt UTCTime
-    updatedAt UTCTime Maybe -- Allowed fields: ident, email.
+    updatedAt UTCTime Maybe -- Allowed fields: ident.
 
     UniqueUser ident
 
-    deriving Typeable
-
+    deriving Typeable Read Eq Show
 --------------------------------------------------------------------------------
 --#Profile ; data: Gender ; documented
 
@@ -86,16 +82,14 @@ User
 -- User table, which stores the unique identifying information for that person.
 
 Profile
-    ident Text SafeToRemove -- delete this field after migration
-
     user UserId
 
     firstName Text
     lastName Text
 
-    email Text Maybe SafeToRemove -- I'm moving this to the new User entity
+    -- email Text -- User ident is the email. For now.
 
-    unverifiedEmail Text Maybe SafeToRemove -- this field is used solely for
+    -- unverifiedEmail Text -- this field is used solely for
       -- accounts which have not yet been authenticated. Upon authentication,
       -- this field is converted to NULL (Nothing, in Haskell). The reason for
       -- this field's existence, instead of a simple `isValidated` field, is
@@ -104,19 +98,22 @@ Profile
       -- I've decided to omit this field for now and worry about it when
       -- we start integrating the iOS app into this backend.
 
-    password Text Maybe SafeToRemove -- This field is basically unnecessary
+    -- password Text -- This field is basically unnecessary
       -- for the browser version of the app.
 
     dateOfBirth Day
     gender Gender -- See Model/Data/Gender
 
-    lastLogin UTCTime
+    -- lastLogin UTCTime -- updatedAt actually gives us the same
+      -- functionality
 
     createdAt UTCTime
     updatedAt UTCTime Maybe -- Allowed fields: ALL
 
     UniqueProfile user -- This makes it easy to fetch all profile info with a
       -- UserId. We can easily get that Id with maybeAuthId
+
+    deriving Read Show Eq
 
 --------------------------------------------------------------------------------
 --#ProfileLog ; data: UserUpdate

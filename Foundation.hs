@@ -5,7 +5,6 @@ import Database.Persist.Sql (ConnectionPool, runSqlPool)
 import Text.Hamlet          (hamletFile)
 import Text.Jasmine         (minifym)
 import Yesod.Auth.BrowserId (authBrowserId)
-import Yesod.Auth.Message   (AuthMessage (InvalidLogin))
 import Yesod.Default.Util   (addStaticContentExternal)
 import Yesod.Core.Types     (Logger)
 import qualified Yesod.Core.Unsafe as Unsafe
@@ -137,11 +136,49 @@ instance YesodAuth App where
     -- Override the above two destinations when a Referer: header is present
     redirectToReferer _ = True
 
+    -- Alter how the login route works. In this case, we make it so that if a
+    -- user is already logged in, visiting the login page redirects them to
+    -- the homepage.
+    loginHandler = do
+        ma <- lift maybeAuthId
+        when (isJust ma) $
+            lift $ redirect HomeR
+        defaultLoginHandler
+
+
+    -- Authentication plugins authenticate a user's credentials, but do not
+    -- verify that they are members of the website. The authenticate function
+    -- handles that second step.
+
+    -- Under our current scheme, authentication will either login users if
+    -- their credentials already exist in the database, or create new users
+    -- using their current credentials. This does not give a User access to the
+    -- app; a User must both be authenticated *and* have a Profile for that.
+
+    -- NOTE: This function is called when using an authentication Plugin.
+    -- Currently authentication is only supported through BrowserId.
+    authenticate creds = runDB $ do
+        let email = credsIdent creds -- from BrowserId
+        now <- liftIO getCurrentTime
+        -- `insertBy` will go Left if that UserEmail is already in use,
+        -- returning the duplicate entity. Otherwise it inserts and returns a
+        -- new key, creating a new user.
+        euid <- insertBy $ User email now Nothing
+        return $ case euid of
+            -- User is already in database:
+            Left (Entity uid _) -> Authenticated uid
+            -- User was not in database, so they were added:
+            -- (perhaps we should also display a welcome message at this
+            -- point?)
+            Right newUid -> Authenticated newUid
+
+{- Old authentication method:
     authenticate creds = runDB $ do
         x <- getBy $ UniqueUser $ credsIdent creds
         return $ case x of
             Just (Entity uid _) -> Authenticated uid
             Nothing -> UserError InvalidLogin
+            -}
 
     -- You can add other plugins like BrowserID, email or OAuth here
     authPlugins _ = [authBrowserId def]

@@ -1,0 +1,38 @@
+<h1>App
+
+$maybe uid <- muid
+  $maybe profile <- mprofile
+
+    <p>
+      You've been authenticated: #{show uid}, and you're a registered
+      user: #{show (entityVal profile)}. Given this, the script
+      for the JS app will load now (assuming that it's implemented :D).
+
+    <!-- Link here to the app's JS, which will be hosted on the static subsite
+    -->
+
+  $nothing
+    <p>
+      You've been authenticated: #{show uid}, and are now logged in.
+      However, you haven't created a profile. There should be a form here for
+      you to fill out, and then you'll be able to access the App.
+
+    <p>
+      <form method=post action=@{HomeR} enctype=#{enctype}>
+        ^{formWidget}
+        <input type=submit>
+
+
+$nothing
+  <p>
+    You're not authenticated. There should be a login field on this page, which
+    will take you to a registration field if you're not registered, or into the
+    app if you are.
+    <!-- Ideally the login button will be moved to a navbar; also, we should
+    remove the need for an extra login-page at AuthR LoginR. -->
+
+  <p .login>
+    Login
+    <a href=@{AuthR LoginR}>
+      here
+    .

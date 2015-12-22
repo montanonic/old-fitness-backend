@@ -29,6 +29,7 @@ type Pronouns = String
 data Gender
     = Male
     | Female
-    | Specify String Pronouns
-    deriving (Show, Read, Eq)
+    -- | Specify String Pronouns ; this is non-trivial to implement with Yesod
+    -- form creation so I'm omitting it for now.
+    deriving (Show, Read, Eq, Enum, Bounded)
 derivePersistField "Gender"

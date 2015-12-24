@@ -57,6 +57,9 @@ instance Yesod App where
         Just <$> defaultClientSessionBackend sessionTimeout -- 120 minutes
             "config/client_session_key.aes"
 
+    -- The following comments are *not* currently implemented; I've removed
+    -- CSRF protection due to conflicts for now. This should be resolved later,
+    -- but will simply be ommitted for the time being.
     -- Yesod Middleware allows you to run code before and after each handler function.
     -- The defaultYesodMiddleware adds the response header "Vary: Accept, Accept-Language" and performs authorization checks.
     -- The defaultCsrfMiddleware:
@@ -64,7 +67,7 @@ instance Yesod App where
     --   b) Validates that incoming write requests include that token in either a header or POST parameter.
     -- For details, see the CSRF documentation in the Yesod.Core.Handler module of the yesod-core package.
     yesodMiddleware = (sslOnlyMiddleware sessionTimeout)
-        . defaultCsrfMiddleware . defaultYesodMiddleware
+        {- . defaultCsrfMiddleware -} . defaultYesodMiddleware
 
     defaultLayout widget = do
         master <- getYesod

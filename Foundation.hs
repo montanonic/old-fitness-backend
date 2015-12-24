@@ -5,6 +5,7 @@ import Database.Persist.Sql (ConnectionPool, runSqlPool)
 import Text.Hamlet          (hamletFile)
 import Text.Jasmine         (minifym)
 import Yesod.Auth.BrowserId (authBrowserId)
+import Yesod.Auth.Dummy     (authDummy)
 import Yesod.Default.Util   (addStaticContentExternal)
 import Yesod.Core.Types     (Logger)
 import qualified Yesod.Core.Unsafe as Unsafe
@@ -140,7 +141,7 @@ instance Yesod App where
 -- requests from the mobile app. This may require Middleware that uses request
 -- header meta-information to determine whether or not to use cookies.
 sessionTimeout :: Int
-sessionTimeout = 1 -- normally 120 but leaving it to 1 minute for testing
+sessionTimeout = 120 -- normally 120 but leaving it at less for testing
     -- purposes
 
 -- | Yell at me if this doesn't have a helpful comment.
@@ -235,9 +236,17 @@ instance YesodAuth App where
             -}
 
     -- You can add other plugins like BrowserID, email or OAuth here
-    authPlugins _ = [authBrowserId def]
+    authPlugins master = addAuthBackDoor master $ [authBrowserId def]
 
     authHttpManager = getHttpManager
+
+-- see https://robots.thoughtbot.com/on-auth-and-tests-in-yesod
+-- conditionally adds AuthDummy for purposes of testing, only when the
+-- application is in Development (this would be a critical security breach
+-- otherwise).
+addAuthBackDoor :: App -> [AuthPlugin App] -> [AuthPlugin App]
+addAuthBackDoor app =
+    if appAllowDummyAuth (appSettings app) then (authDummy :) else id
 
 instance YesodAuthPersist App
 

@@ -14,6 +14,18 @@ import Text.Shakespeare.Text (st)
 import Yesod.Default.Config2 (ignoreEnv, loadAppSettings)
 import Yesod.Test            as X
 
+-- | See https://robots.thoughtbot.com/on-auth-and-tests-in-yesod.
+-- Allows us to authenticate any user within tests. Necessary for testing
+-- authentication.
+authenticateAs :: Entity User -> YesodExample App ()
+authenticateAs (Entity _ u) = do
+    root <- appRoot . appSettings <$> getTestYesod
+
+    request $ do
+        setMethod "POST"
+        addPostParam "ident" $ userIdent u
+        setUrl $ root ++ "/auth/page/dummy"
+
 runDB :: SqlPersistM a -> YesodExample App a
 runDB query = do
     app <- getTestYesod

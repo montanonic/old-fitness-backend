@@ -54,6 +54,9 @@ data AppSettings = AppSettings
     -- ^ Copyright text to appear in the footer of the page
     , appAnalytics              :: Maybe Text
     -- ^ Google Analytics code
+    
+    , appAllowDummyAuth         :: Bool
+    -- ^ see https://robots.thoughtbot.com/on-auth-and-tests-in-yesod
     }
 
 instance FromJSON AppSettings where
@@ -79,6 +82,8 @@ instance FromJSON AppSettings where
 
         appCopyright              <- o .: "copyright"
         appAnalytics              <- o .:? "analytics"
+
+        appAllowDummyAuth <- o .:? "allow-dummy-auth" .!= defaultDev
 
         return AppSettings {..}
 

@@ -50,11 +50,11 @@ instance Yesod App where
             Nothing -> getApprootText guessApproot app req
             Just root -> root
 
-    -- Store session data on the client in encrypted cookies,
-    -- default session idle timeout is 120 minutes
-    makeSessionBackend _ = Just <$> defaultClientSessionBackend
-        120    -- timeout in minutes
-        "config/client_session_key.aes"
+    -- Store session data on the client in encrypted cookies; see below this
+    -- instance for the sessionTimeout variable and brief notes on cookies.
+    makeSessionBackend _ = sslOnlySessions $
+        Just <$> defaultClientSessionBackend sessionTimeout -- 120 minutes
+            "config/client_session_key.aes"
 
     -- Yesod Middleware allows you to run code before and after each handler function.
     -- The defaultYesodMiddleware adds the response header "Vary: Accept, Accept-Language" and performs authorization checks.
@@ -62,11 +62,17 @@ instance Yesod App where
     --   a) Sets a cookie with a CSRF token in it.
     --   b) Validates that incoming write requests include that token in either a header or POST parameter.
     -- For details, see the CSRF documentation in the Yesod.Core.Handler module of the yesod-core package.
-    yesodMiddleware = defaultCsrfMiddleware . defaultYesodMiddleware
+    yesodMiddleware = (sslOnlyMiddleware sessionTimeout)
+        . defaultCsrfMiddleware . defaultYesodMiddleware
 
     defaultLayout widget = do
         master <- getYesod
-        mmsg <- getMessage
+        mmsg <- getMessage -- In production we're either going to want to get
+        -- rid of messages, or to create a special class for displaying
+        -- messages that allows them to be closed, using CSS and/or JS. The
+        -- reason being that messages are embedded within the HTML statically
+        -- by default, and require a refresh to get rid of. We don't want our
+        -- clients refreshing.
 
         -- We break up the default layout into two components:
         -- default-layout is the contents of the body tag, and
@@ -116,6 +122,17 @@ instance Yesod App where
             || level == LevelError
 
     makeLogger = return . appLogger
+
+-- | This is self-describing. Session timeouts are currently implemented
+-- client-side, using cookies with authentication data and an expiration set
+-- to the value below, in minutes.
+--
+-- When we integreate with the mobile app, we'll either want to implement
+-- timeouts, or make sure that the session logic will not run when handling
+-- requests from the mobile app. This may require Middleware that uses request
+-- header meta-information to determine whether or not to use cookies.
+sessionTimeout :: Int
+sessionTimeout = 120
 
 -- How to run database actions.
 instance YesodPersist App where

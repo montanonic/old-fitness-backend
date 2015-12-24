@@ -17,11 +17,11 @@ $maybe uid <- muid
       However, you haven't created a profile. There should be a form here for
       you to fill out, and then you'll be able to access the App.
 
-    <p>
-      <form method=post action=@{HomeR} enctype=#{enctype}>
-        ^{formWidget}
-        <input type=submit>
-
+    $maybe ((_, formWidget), enctype) <- mForm
+      <p>
+        <form method=post action=@{HomeR} enctype=#{enctype}>
+          ^{formWidget}
+          <input type=submit>
 
 $nothing
   <p>

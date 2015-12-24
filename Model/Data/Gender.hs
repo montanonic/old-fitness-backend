@@ -2,6 +2,7 @@ module Model.Data.Gender where
 
 import Prelude
 import Database.Persist.TH
+import Data.Aeson.TH
 
 -- NOTE: I intend to use only the Male/Female fields for now. The Specify field
 -- is included for sake of completeness. I think deferring gender options to
@@ -32,4 +33,5 @@ data Gender
     -- | Specify String Pronouns ; this is non-trivial to implement with Yesod
     -- form creation so I'm omitting it for now.
     deriving (Show, Read, Eq, Enum, Bounded)
+$(deriveJSON defaultOptions ''Gender)
 derivePersistField "Gender"

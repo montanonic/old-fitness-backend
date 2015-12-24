@@ -92,8 +92,16 @@ instance Yesod App where
     isAuthorized (AuthR _) _ = return Authorized
     isAuthorized FaviconR _ = return Authorized
     isAuthorized RobotsR _ = return Authorized
-    -- Default to Authorized for now.
-    isAuthorized _ _ = return Authorized
+
+    -- require that a user is authenticated and logged in before they can
+    -- submit a profile form. A user does not have to be authorized for read
+    -- requests at this route.
+    isAuthorized HomeR True = isUser
+    isAuthorized HomeR False = return Authorized
+
+    -- current default for accessing all other routes is that a user has a
+    -- Profile entity.
+    isAuthorized _ _ = hasProfile
 
     -- This function creates static content files in the static folder
     -- and names them based on a hash of their content. This allows
@@ -132,7 +140,36 @@ instance Yesod App where
 -- requests from the mobile app. This may require Middleware that uses request
 -- header meta-information to determine whether or not to use cookies.
 sessionTimeout :: Int
-sessionTimeout = 120
+sessionTimeout = 1 -- normally 120 but leaving it to 1 minute for testing
+    -- purposes
+
+-- | Yell at me if this doesn't have a helpful comment.
+isUser :: Handler AuthResult
+isUser = do
+    muid <- maybeAuthId
+    return $ case (isJust muid) of
+        True -> Authorized
+        False -> AuthenticationRequired
+
+-- | Yell at me if this doesn't have a helpful comment.
+hasProfile :: Handler AuthResult
+hasProfile = do
+    -- maybe get a user's authenticated identity
+    muid <- maybeAuthId
+    -- maybe find a user's Profile entity connected to their UserId
+    mprofile <- maybe (pure Nothing)
+        (runDB . getBy . UniqueProfile) muid
+    return $ case (muid, mprofile) of
+        -- user is logged in and has a profile
+        (_, Just _) -> Authorized
+        -- user is not logged in or does not have an account
+        (Nothing, _) -> AuthenticationRequired
+        -- user is logged in but does not have a Profile; this shouldn't
+        -- happen, because a user's client shouldn't let them access these
+        -- parts of the app unless they already have created a profile.
+        (_, Nothing) -> Unauthorized "You need to have a Profile to access\
+            \ the application."
+
 
 -- How to run database actions.
 instance YesodPersist App where

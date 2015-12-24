@@ -1,8 +1,8 @@
 ## How to understand what's going on:
 
 This repository contains all the scaffolding from Yesod, so it will look
-intimidating without familiarity with the framework. Thankfully, for now, all
-of the relevant information is located in just two folders and one file:
+intimidating without familiarity with the framework. Thankfully, the bulk of
+the most accessible information is located in just two folders and one file:
 
   1. `config/models` is the file which contains all of the database models. It
   will be split into more granular and organized files should the models grow
@@ -13,14 +13,14 @@ of the relevant information is located in just two folders and one file:
   `models` file.
 
   3. `documentation/` is the directory containing the documentation for the
-  entire repository. For now, this documentation is only on the Models, given
-  that that is all that's being worked on. Hopefully, the code-comments in the
-  `models` file in addition to the longer explanations in this file will be
-  helpful. Documentation is very important to me, and though all of this is a
-  major work in progress, please let me know if I need to better clarify
-  something, if not provide documentation for it in the first place. Also feel
-  free to edit the documentation.
+  entire repository. This can help bridge you into other parts of the project.
+  Documentation is very important to me, and though all of this is a major work
+  in progress, please let me know if I need to better clarify something, if not
+  provide documentation for it in the first place. Also feel free to open a pull
+  request with edits to the documentation.
 
-Please read the following for a nice overview of core ideas in Relational
-Database design:
+Those should give you access to the highest-level information about the website.
+
+The following guide offers a nice overview of core ideas in Relational
+Database design, and will help immensely with understanding `config/models`:
 http://en.tekstenuitleg.net/articles/software/database-design-tutorial/intro.html

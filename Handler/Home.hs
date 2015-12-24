@@ -4,14 +4,8 @@ import Import
 import Data.Time.Calendar()
 
 -- | This is for prototyping, and will require adding server-side and/or
--- client-side validation before it should be allowed for production.
---
--- NOTE: This is a PARTIAL FUNCTION, and WILL cause app crashes in the event of
--- failure. THIS SHOULD NOT BE INCLUDED IN A REAL WEBSITE AS IS.
---
--- An ideal solution to the partial function problem would be to make this
--- and runFormPost return Maybe FormResults. However, my many attempts at that
--- failed, which is why I'm resorting to an unsafe function right now.
+-- client-side validation before it should be allowed for production. We may
+-- also choose to move to an AJAX form for this stage.
 profileForm :: UserId -> Form Profile
 profileForm uid = renderDivs $ Profile
     <$> pure uid -- user

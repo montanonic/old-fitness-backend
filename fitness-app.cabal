@@ -22,6 +22,8 @@ library
                      Settings.StaticFiles
                      Handler.Common
                      Handler.Home
+                     Handler.Profile
+                     Model.Profile
                      Model.Data.Gender
                      Model.Data.FriendshipAction
                      Model.Data.ProfileUpdate

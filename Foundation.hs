@@ -162,7 +162,7 @@ hasProfile = do
     muid <- maybeAuthId
     -- maybe find a user's Profile entity connected to their UserId
     mprofile <- maybe (pure Nothing)
-        (runDB . getBy . UniqueProfile) muid
+        (runDB . getBy . UniqueProfileUser) muid
     return $ case (muid, mprofile) of
         -- user is logged in and has a profile
         (_, Just _) -> Authorized
@@ -173,7 +173,6 @@ hasProfile = do
         -- parts of the app unless they already have created a profile.
         (_, Nothing) -> Unauthorized "You need to have a Profile to access\
             \ the application."
-
 
 -- How to run database actions.
 instance YesodPersist App where

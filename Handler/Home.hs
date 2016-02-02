@@ -1,7 +1,9 @@
 module Handler.Home where
 
 import Import
-import Data.Time.Calendar()
+import Data.Time.Calendar() -- we won't need this once we switch to AJAX forms
+
+import Model.Profile (maybeFetchProfile)
 
 -- | This is for prototyping, and will require adding server-side and/or
 -- client-side validation before it should be allowed for production. We may
@@ -21,8 +23,7 @@ getHomeR = do
     -- maybe get a user's authenticated identity
     muid <- maybeAuthId
     -- maybe find a user's Profile entity connected to their UserId
-    mprofile <- maybe (pure Nothing)
-        (runDB . getBy . UniqueProfile) muid
+    mprofile <- maybeFetchProfile muid
     -- create a form if a user is logged in
     mForm <- traverse (runFormPost . profileForm) muid
     -- mForm == ((res, formWidget), enctype)
@@ -30,9 +31,10 @@ getHomeR = do
 
 postHomeR :: Handler Html
 postHomeR = do
+    -- maybe get a user's authenticated identity
     muid <- maybeAuthId
-    mprofile <- maybe (pure Nothing)
-        (runDB . getBy . UniqueProfile) muid
+    -- maybe find a user's Profile entity connected to their UserId
+    mprofile <- maybeFetchProfile muid
     -- send form data if a user is logged in
     mForm <- traverse (runFormPost . profileForm) muid
     -- we handle that result here with code that potentially inserts it into

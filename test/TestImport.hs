@@ -9,6 +9,7 @@ import Database.Persist      as X hiding (get)
 import Database.Persist.Sql  (SqlPersistM, SqlBackend, runSqlPersistMPool, rawExecute, rawSql, unSingle, connEscapeName)
 import Foundation            as X
 import Model                 as X
+import Settings              (appRoot)
 import Test.Hspec            as X
 import Text.Shakespeare.Text (st)
 import Yesod.Default.Config2 (ignoreEnv, loadAppSettings)
@@ -25,6 +26,7 @@ authenticateAs (Entity _ u) = do
         setMethod "POST"
         addPostParam "ident" $ userIdent u
         setUrl $ root ++ "/auth/page/dummy"
+
 
 runDB :: SqlPersistM a -> YesodExample App a
 runDB query = do

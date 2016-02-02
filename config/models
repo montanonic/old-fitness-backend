@@ -57,17 +57,16 @@
 --#User ; documented
 
 -- | I've split the previous User model into User and Profile now to allow for
--- easier integration with Yesod's authentication plugins. This is definitely
--- a work in progress and can easily be reverted. However, it does seem to be
--- an intelligent idea to have a table devoted solely to a user's identity.
--- The information in Profile cannot be verified, aside from the email. We may
+-- easier integration with Yesod's authentication plugins. This is definitely a
+-- work in progress and can easily be reverted. However, it does seem to be an
+-- intelligent idea to have a table devoted solely to a user's identity. We may
 -- consider moving the email and password fields into this
 
 User
     ident Text -- Authentication data. Under Persona this will be their email.
       -- Other Authentication services do not use an email for their unique
-      -- tokens. Hence, we should include an `email` field when adding other
-      -- authentication methods.
+      -- tokens, meaning we'll need to alter the models a bit when implementing
+      -- new authentication services.
 
     createdAt UTCTime
     updatedAt UTCTime Maybe -- Allowed fields: ident.
@@ -76,7 +75,7 @@ User
 
     deriving Typeable Read Eq Show
 --------------------------------------------------------------------------------
---#Profile ; data: Gender ; documented
+--#Profile ; data: Gender ; json ; documented
 
 -- | This is what the old User entity used to be, but it now references the new
 -- User table, which stores the unique identifying information for that person.
@@ -87,30 +86,15 @@ Profile
     firstName Text
     lastName Text
 
-    -- email Text -- User ident is the email. For now.
-
-    -- unverifiedEmail Text -- this field is used solely for
-      -- accounts which have not yet been authenticated. Upon authentication,
-      -- this field is converted to NULL (Nothing, in Haskell). The reason for
-      -- this field's existence, instead of a simple `isValidated` field, is
-      -- documented in `UserInfo.md`.
-      --
-      -- I've decided to omit this field for now and worry about it when
-      -- we start integrating the iOS app into this backend.
-
-    -- password Text -- This field is basically unnecessary
-      -- for the browser version of the app.
-
     dateOfBirth Day
     gender Gender -- See Model/Data/Gender
 
-    -- lastLogin UTCTime -- updatedAt actually gives us the same
-      -- functionality
+    -- lastLogin UTCTime -- not sure if I should implement
 
     createdAt UTCTime
-    updatedAt UTCTime Maybe -- Allowed fields: ALL
+    updatedAt UTCTime Maybe -- Allowed fields: ALL BUT user.
 
-    UniqueProfile user -- This makes it easy to fetch all profile info with a
+    UniqueProfileUser user -- This makes it easy to fetch all profile info with a
       -- UserId. We can easily get that Id with maybeAuthId
 
     deriving Read Show Eq
@@ -134,6 +118,16 @@ ProfileLog
 
     createdAt UTCTime -- These logs are recorded at the same time a change
       -- is made. Hence, this is the timestamp of the change.
+
+--------------------------------------------------------------------------------
+--#ProfileOptions
+
+-- | One example of options would be a user's display preferences for their
+-- profile in terms of what personal information they want to show on their
+-- wall.
+
+-- Leaving this un-implemented for now, while I wait to figure out how to best
+-- structure this model.
 
 --------------------------------------------------------------------------------
 --#Friendship ; documented

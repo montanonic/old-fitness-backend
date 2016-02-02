@@ -97,15 +97,8 @@ instance Yesod App where
     isAuthorized FaviconR _ = return Authorized
     isAuthorized RobotsR _ = return Authorized
 
-    -- require that a user is authenticated and logged in before they can
-    -- submit a profile form. A user does not have to be authorized for read
-    -- requests at this route.
-    isAuthorized HomeR True = isUser
-    isAuthorized HomeR False = return Authorized
-
-    -- current default for accessing all other routes is that a user has a
-    -- Profile entity.
-    isAuthorized _ _ = hasProfile
+    -- everyone is authorized right now
+    isAuthorized _ _ = return Authorized
 
     -- This function creates static content files in the static folder
     -- and names them based on a hash of their content. This allows
@@ -147,7 +140,8 @@ sessionTimeout :: Int
 sessionTimeout = 120 -- normally 120 but leaving it at less for testing
     -- purposes
 
--- | Yell at me if this doesn't have a helpful comment.
+{- removing auth for now
+-- | Yell at me if this needs a comment.
 isUser :: Handler AuthResult
 isUser = do
     muid <- maybeAuthId
@@ -155,7 +149,7 @@ isUser = do
         True -> Authorized
         False -> AuthenticationRequired
 
--- | Yell at me if this doesn't have a helpful comment.
+-- | Yell at me if this needs a comment.
 hasProfile :: Handler AuthResult
 hasProfile = do
     -- maybe get a user's authenticated identity
@@ -173,6 +167,7 @@ hasProfile = do
         -- parts of the app unless they already have created a profile.
         (_, Nothing) -> Unauthorized "You need to have a Profile to access\
             \ the application."
+-}
 
 -- How to run database actions.
 instance YesodPersist App where
@@ -249,6 +244,8 @@ instance YesodAuth App where
 addAuthBackDoor :: App -> [AuthPlugin App] -> [AuthPlugin App]
 addAuthBackDoor app =
     if appAllowDummyAuth (appSettings app) then (authDummy :) else id
+
+- }
 
 instance YesodAuthPersist App
 
